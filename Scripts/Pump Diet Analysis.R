@@ -118,7 +118,6 @@ View(diet.sm.tr)
 
 
 #Create new column of Freq per taxa
-
 diet.mat.tr <- diet.mat.tr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num>0)) %>% mutate(Dermap_freq = sum(Dermap_num>0)) %>%
   mutate(TerrColeo_freq = sum(TerrColeo_num>0)) %>% mutate(Hymen_freq = sum(Hymen_num>0)) %>%
   mutate(Lepid_freq = sum(Lepid_num>0)) %>% mutate(Bivalv_freq = sum(BivalvTot_num>0)) %>%
@@ -131,7 +130,6 @@ diet.mat.tr <- diet.mat.tr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num
 
 
 #Check freq columns to make sure correct
-
 diet.mat.freqcheck <- diet.mat.tr[,-c(3:36)]
 
 View(diet.mat.freqcheck)
@@ -140,8 +138,6 @@ View(diet.mat.freqcheck)
 
 #Good to go
 #Check to make sure FreqTot same as sum of all freq columns
-
-
 diet.mat.check <- diet.mat.tr %>% rowwise() %>% mutate(TotFreqCheck = sum(Orthop_freq, Dermap_freq, TerrColeo_freq, Hymen_freq, Lepid_freq, Bivalv_freq,
                                                                           Gastro_freq, Zoop_freq, Clitella_freq, Ephem_freq,Trichop_freq,Diptera_freq,Odonata_freq,
                                                                           Hemiptera_freq, Other_freq, Fish_freq))
@@ -152,7 +148,6 @@ View(diet.mat.check)
 
 
 #FreqTot and _freq columns agree
-
 
 #Now that we have three columns summarizing total numeric, mass, and frequency,
 #summarize by pond (across months) and calculate IRI per pond, per taxa

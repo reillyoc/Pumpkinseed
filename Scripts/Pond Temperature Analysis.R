@@ -1,6 +1,6 @@
 # Pumpkinseed Diet
 
-#Author(s): Timothy Fernandes & Reilly O'Connor
+#Author(s): Timothy Fernandes
 #Version: 2023-10-12
 
 #Pkgs
