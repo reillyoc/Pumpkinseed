@@ -1,16 +1,10 @@
-# Moving Towards Results
+#Pumpkinseed Diet
 
-install.packages("emmeans")
-install.packages("nlme")
-install.packages("piecewiseSEM")
+#Author(s): Timothy Fernandes
+#Version: 2023-10-12
 
-getwd()
-
-setwd("C:/Users/timot/Desktop/UofT_Surface/Conferences/SEB_2023")
-
-getwd()
-
-
+#Pkgs
+library(RColorBrewer)
 library(ggpubr)
 library(ggplot2)
 library(dplyr)
@@ -29,25 +23,22 @@ library(rstatix)
 library(nlme)
 library(piecewiseSEM)
 
+#load data
+df_temp <- read.csv("../Pumpkinseeds/Data/SEB_Temps.csv", header = T)
 
-# Pond Temps
+View(df_temp)
 
+str(df_temp)
 
-temp <- read.csv("SEB_Temps.csv", header = T)
+df_temp$Period <- as.factor(df_temp$Period)
+df_temp$Pond <- as.factor(df_temp$Pond)
+df_temp$Julian <- as.numeric(df_temp$Julian)
 
-View(temp)
-
-str(temp)
-
-temp$Period <- as.factor(temp$Period)
-temp$Pond <- as.factor(temp$Pond)
-temp$Julian <- as.numeric(temp$Julian)
-
-temp.gsp.w <- temp %>% filter(Julian < 112)
+temp.gsp.w <- df_temp %>% filter(Julian < 112)
 
 View(temp.gsp.w)
 
-# GSP Winter Temps ----
+#GSP Winter Temps ----
 
 
 temp.trial <- temp.gsp.w[temp.gsp.w$Pond == "PP" | temp.gsp.w$Pond == "KSS" | temp.gsp.w$Pond == "GBP",] %>% group_by(Pond, Julian) %>% mutate(Record = 1:n())
@@ -69,7 +60,7 @@ temp.gsp.win$Pond <- "GSP"
 View(temp.gsp.win)
 
 
-temp.t <- temp %>% select(-c(Serial, MeasuredDate, Period))
+temp.t <- df_temp %>% select(-c(Serial, MeasuredDate, Period))
 
 View(temp.t)
 
@@ -83,7 +74,7 @@ temp.all <- rbind(temp.t, temp.gsp.win.t)
 View(temp.all)
 
 
-# Summarize for daily temps
+#Summarize for daily temps
 
 temp.sum <- temp.all %>% group_by(Pond, Julian) %>% summarize(DailyTemp = mean(Temp))
 
@@ -96,7 +87,7 @@ temp.sum$Julian <- as.numeric(temp.sum$Julian)
 ggplot(temp.sum, aes(y = DailyTemp, x = Julian, colour = Pond, shape = Pond)) + geom_point() + geom_smooth(method = "loess", se = T)
 
 
-# Trim for only contemporary (Stouffville)
+#Trim for only contemporary (Stouffville)
 
 
 temp.sum <- temp.sum %>% filter(Pond == "KSS" | Pond == "GSP" | Pond == "PP")
@@ -106,8 +97,7 @@ ggplot(temp.sum, aes(y = DailyTemp, x = Julian)) + geom_point(aes(colour = Pond)
 
 
 
-# Trim out later dates
-
+#Trim out later dates
 
 temp.sum.t <- temp.sum %>% filter(Julian < 274)
 
@@ -119,9 +109,9 @@ ggplot(temp.sum.t, aes(y = DailyTemp, x=as.Date(Julian, origin = as.Date("2021-0
 
 
 
-# Now pump data
+#Now pump data
 
-pump <- read.csv("PumpData_GSI2.csv", header = T)
+pump <- read.csv("../Pumpkinseeds/Data/PumpData_GSI2.csv", header = T)
 
 str(pump)
 
@@ -139,10 +129,10 @@ pump.t <- pump.t %>% filter(JulianDate <= 270)
 head(pump.t)
 
 
-# Logistic Regressions (Phenology) ----
+#Logistic Regressions (Phenology) ----
 
 
-pump2 <- read.csv("PumpData_GSI2.csv", header = T)
+pump2 <- read.csv("../Pumpkinseeds/Data/PumpData_GSI2.csv", header = T)
 
 str(pump)
 
@@ -160,7 +150,7 @@ pp.sam7 <- pump.c2 %>% filter(Pond == "PP")
 kss.sam7 <- pump.c2 %>% filter(Pond == "KSS")
 
 
-# Now join
+#Now join
 
 
 View(temp.all)
@@ -199,7 +189,7 @@ pp.join77 <- pp.join7 %>% group_by(Pond.x, ID) %>% slice_sample(n = 1)
 kss.join77 <- kss.join7 %>% group_by(Pond.x, ID) %>% slice_sample(n = 1)
 
 
-# Now join back together
+#Now join back together
 
 gut.join77 <- rbind(gsp.join77, pp.join77, kss.join77)
 
@@ -212,7 +202,7 @@ gut.join.t7 <- gut.join77[,-c(18:73)]
 head(gut.join.t7)
 
 
-# Now let's try logistic regression again
+#Now let's try logistic regression again
 
 
 gut.join.t7 <- gut.join.t7 %>% filter(JulianDate < 270)
@@ -246,7 +236,7 @@ gut.join.pp7 <- gut.join.t7 %>% filter(Pond.x == "PP")
 gut.join.kss7 <- gut.join.t7 %>% filter(Pond.x == "KSS")
 
 
-# GSP
+#GSP
 
 gut.join.gsp7 %>% ggplot(aes(x = Temp, y = gonstatus)) +
   geom_point(alpha = 0.2) +
@@ -303,7 +293,7 @@ gut.join.pp7 %>% ggplot(aes(x = Temp, y = gonspent)) +
   ) 
 
 
-# KSS
+#KSS
 
 gut.join.kss7 %>% ggplot(aes(x = Temp, y = gonstatus)) +
   geom_point(alpha = 0.2) +
@@ -330,11 +320,11 @@ gut.join.kss7 %>% ggplot(aes(x = Temp, y = gonspent)) +
   ) 
 
 
-# KSS spawning at the warmest temperatures; ~50% mature at 10oC, 75% ripe at 12.5oC, 25% spent at 20OC
-# PP spawning at coldest temps; 100% mature at 10oC, 100% ripe at 12.5oC, 25% spent at 20oC
-# GSP spawning at similar temps to PP; 75% mature at 10oC, 98% ripe at 12.5oC, 37.5% spent at 20oC
+#KSS spawning at the warmest temperatures; ~50% mature at 10oC, 75% ripe at 12.5oC, 25% spent at 20OC
+#PP spawning at coldest temps; 100% mature at 10oC, 100% ripe at 12.5oC, 25% spent at 20oC
+#GSP spawning at similar temps to PP; 75% mature at 10oC, 98% ripe at 12.5oC, 37.5% spent at 20oC
 
-# All ponds
+#All ponds
 
 gut.join.t7 %>% ggplot(aes(x = Temp, y = gonstatus)) +
   geom_point(alpha = 0.2) +
@@ -363,7 +353,7 @@ gut.join.t7 %>% ggplot(aes(x = Temp, y = gonripe)) +
 
 
 
-# GFI Plots ----
+#GFI Plots ----
 
 pump.gfi.df <- with(pump.t[pump.t$Sex == "F",], aggregate(GFI, list(Pond=Pond, Sample=Sample), mean, na.rm = T))
 pump.gfi.df$sd <- with(pump.t[pump.t$Sex == "F",], aggregate(GFI, list(Pond=Pond, Sample=Sample),
@@ -403,9 +393,9 @@ pump.f.gfi <- ggplot(pump.gfi.df[pump.gfi.df$Julian < 170,], aes(x=as.Date(Julia
 pump.f.gfi
 
 
-# Let's plot male, female, and all body sizes
+#Let's plot male, female, and all body sizes
 
-# MesInd Plots ----
+#MesInd Plots ----
 
 
 pump.mes.df <- with(pump.t[pump.t$Sex == "F",], aggregate(MesInd, list(Pond=Pond, Sample=Sample), mean, na.rm = T))
@@ -431,18 +421,18 @@ pump.f.mes <- ggplot(pump.mes.df[pump.mes.df$Julian < 166,], aes(x=as.Date(Julia
 pump.f.mes
 
 
-# MesInd Analysis ----
+#MesInd Analysis ----
 
 pump.f <- pump.t %>% filter(Sex == "F")
 pump.m <- pump.t %>% filter(Sex =="M")
 
 hist(log(pump.f$MesInd))
 
-# Not going to produce relevant hypothesis test -- simply compare peak MesInd
+#Not going to produce relevant hypothesis test -- simply compare peak MesInd
 
 
 
-# GFI Plots ----
+#GFI Plots ----
 
 
 pump.gfi.df <- with(pump.t[pump.t$Sex == "F",], aggregate(GFI, list(Pond=Pond, Sample=Sample), mean, na.rm = T))
@@ -470,7 +460,7 @@ pump.f.gfi
 
 
 
-# Males
+#Males
 
 pump.gfi.m.df <- with(pump.t[pump.t$Sex == "M",], aggregate(GFI, list(Pond=Pond, Sample=Sample), mean, na.rm = T))
 pump.gfi.m.df$sd <- with(pump.t[pump.t$Sex == "M",], aggregate(GFI, list(Pond=Pond, Sample=Sample),
@@ -496,17 +486,17 @@ pump.m.gfi
 
 
 
-# Diet Plotting and Analysis ----
+#Diet Plotting and Analysis ----
 
 
-# Import
+#Import
 
 
-diet.all <- read.csv("GypsyMoth_DietData.csv", header = T)
+diet.all <- read.csv("../Pumpkinseeds/Data/GypsyMoth_DietData.csv", header = T)
 
 
 
-# Now remove rows with NA's anywhere else
+#Now remove rows with NA's anywhere else
 
 
 View(diet.all)
@@ -518,7 +508,7 @@ View(diet.complete)
 
 
 
-## Convert date into usable format, then extract month
+#Convert date into usable format, then extract month
 
 diet.complete$newdate <- strptime(as.character(diet.complete$Date), "%d/%m/%Y")
 diet.complete <- diet.complete %>% mutate(Month = format(newdate, "%m"))
@@ -540,7 +530,7 @@ diet.complete$Pond <- as.factor(diet.complete$Pond)
 str(diet.complete)
 
 
-## Remove MT stomachs
+#Remove MT stomachs
 
 
 diet.complete <- diet.complete %>% filter(!Fullness == "MT")
@@ -551,14 +541,14 @@ str(diet.complete)
 View(diet.complete)
 
 
-# Now trim mature
+#Now trim mature
 
 
 diet.mat <- diet.complete %>% filter(TLEN >=60) 
 
 
 
-# Trim unnecesarry columns
+#Trim unnecesarry columns
 
 
 diet.mat.tr <- diet.mat[,-c(1,3,4,6,7,8,9,10,41,42,45,46,47,48)]
@@ -568,7 +558,7 @@ diet.mat.tr <- diet.mat.tr[,c(1,35,3:34)]
 
 
 
-# Now calculate row totals for Numeric and Mass 
+#Now calculate row totals for Numeric and Mass 
 
 
 
@@ -605,7 +595,7 @@ View(diet.sm.tr)
 
 
 
-# Create new column of Freq per taxa
+#Create new column of Freq per taxa
 
 diet.mat.tr <- diet.mat.tr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num>0)) %>% mutate(Dermap_freq = sum(Dermap_num>0)) %>%
   mutate(TerrColeo_freq = sum(TerrColeo_num>0)) %>% mutate(Hymen_freq = sum(Hymen_num>0)) %>%
@@ -618,7 +608,7 @@ diet.mat.tr <- diet.mat.tr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num
 
 
 
-# Check freq columns to make sure correct
+#Check freq columns to make sure correct
 
 diet.mat.freqcheck <- diet.mat.tr[,-c(3:36)]
 
@@ -626,8 +616,8 @@ View(diet.mat.freqcheck)
 
 
 
-# Good to go
-# Check to make sure FreqTot same as sum of all freq columns
+#Good to go
+#Check to make sure FreqTot same as sum of all freq columns
 
 
 diet.mat.check <- diet.mat.tr %>% rowwise() %>% mutate(TotFreqCheck = sum(Orthop_freq, Dermap_freq, TerrColeo_freq, Hymen_freq, Lepid_freq, Bivalv_freq,
@@ -639,11 +629,11 @@ diet.mat.check <- diet.mat.check[,-c(3:36,38:50)]
 View(diet.mat.check)
 
 
-# FreqTot and _freq columns agree
+#FreqTot and _freq columns agree
 
 
-# Now that we have three columns summarizing total numeric, mass, and frequency,
-# summarize by pond (across months) and calculate IRI per pond, per taxa
+#Now that we have three columns summarizing total numeric, mass, and frequency,
+#summarize by pond (across months) and calculate IRI per pond, per taxa
 
 
 
@@ -661,8 +651,8 @@ View(all.mat.summ)
 
 
 
-# Calculate percent numeric, mass, and freq per taxa
-# ungroup first to remove group_by() limit and allow rowwise() calculation 
+#Calculate percent numeric, mass, and freq per taxa
+#ungroup first to remove group_by() limit and allow rowwise() calculation 
 
 
 all.mat.summ <- all.mat.summ %>% ungroup()
@@ -716,7 +706,7 @@ View(all.mat.summ)
 
 
 
-# Trim table to include only IRI components (numP,massP,freqP)
+#Trim table to include only IRI components (numP,massP,freqP)
 
 
 mat.IRI <- all.mat.summ[,-c(2:33)]
@@ -761,7 +751,7 @@ View(mat.IRI.tr.1)
 
 
 
-# Changing DF from Wide to Long ----
+#Changing DF from Wide to Long ----
 
 
 names(mat.IRI.tr.1)
@@ -773,7 +763,7 @@ IRI.new <- mat.IRI.tr.1 %>% pivot_longer(cols=c( "Orthop_IRI", "Dermap_IRI", "Te
 View(IRI.new)
 
 
-# Spearman Rank Correlation for Annual Diet ----
+#Spearman Rank Correlation for Annual Diet ----
 
 cor.test(IRI.new[IRI.new$Pond == "GSP",]$IRI, IRI.new[IRI.new$Pond == "PP",]$IRI, method = "spearman")
 cor.test(IRI.new[IRI.new$Pond == "GSP",]$IRI, IRI.new[IRI.new$Pond == "KSS",]$IRI, method = "spearman")
@@ -781,11 +771,11 @@ cor.test(IRI.new[IRI.new$Pond == "PP",]$IRI, IRI.new[IRI.new$Pond == "KSS",]$IRI
 
 
 
-# None of the annual diets are dissimilar between populations (all IRI rank distribution's are correlated)
+#None of the annual diets are dissimilar between populations (all IRI rank distribution's are correlated)
 
 
-# Plotting ----
-# Make IRI's percentages
+#Plotting ----
+#Make IRI's percentages
 
 
 IRI.new.n <- IRI.new %>%                                  
@@ -796,7 +786,7 @@ View(IRI.new.n)
   
 
 
-# Now plot
+#Now plot
 
 
 p <- ggplot(IRI.new.n, aes(x = Taxon, y = IRI_P, fill = Pond))+
@@ -806,7 +796,7 @@ p <- ggplot(IRI.new.n, aes(x = Taxon, y = IRI_P, fill = Pond))+
 p + coord_flip()
 
 
-# Try ordering by IRI
+#Try ordering by IRI
 
 p.ord <- ggplot(IRI.new.n, aes(x = reorder(Taxon, IRI_P), y = IRI_P, fill = Pond))+
   geom_bar(stat="identity", color="black", position=position_dodge()) +
@@ -819,7 +809,7 @@ p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
   scale_fill_brewer(palette = "Blues")
 
 
-# test different palettes for plot
+#test different palettes for plot
 
 
 p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
@@ -828,15 +818,15 @@ p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
 
 
 
-# Seasonal Diet IRI ----
-# Repeat above steps but split into seasonal groupings
+#Seasonal Diet IRI ----
+#Repeat above steps but split into seasonal groupings
 
 
 diet.all <- read.csv("GypsyMoth_DietData.csv", header = T)
 
 
 
-# Now remove rows with NA's anywhere else
+#Now remove rows with NA's anywhere else
 
 
 View(diet.all)
@@ -848,7 +838,7 @@ View(diet.complete)
 
 
 
-## Convert date into usable format, then extract month
+#Convert date into usable format, then extract month
 
 diet.complete$newdate <- strptime(as.character(diet.complete$Date), "%d/%m/%Y")
 diet.complete <- diet.complete %>% mutate(Month = format(newdate, "%m"))
@@ -880,14 +870,14 @@ str(diet.complete)
 View(diet.complete)
 
 
-# Now trim mature
+#Now trim mature
 
 
 diet.mat <- diet.complete %>% filter(TLEN >=60) 
 
 
 
-# Trim unnecessary columns
+#Trim unnecessary columns
 
 
 diet.mat.tr <- diet.mat[,-c(1,3,4,6,7,8,9,10,41,42,45,46,47,48)]
@@ -909,7 +899,7 @@ diet.mat.pr <- diet.mat.tr %>% filter(Month < 6)
 
 
 
-# Now calculate row totals for Numeric and Mass 
+#Now calculate row totals for Numeric and Mass 
 
 
 
@@ -943,7 +933,7 @@ View(diet.mat.pr)
 
 
 
-# Create new column of Freq per taxa
+#Create new column of Freq per taxa
 
 diet.mat.pr <- diet.mat.pr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num>0)) %>% mutate(Dermap_freq = sum(Dermap_num>0)) %>%
   mutate(TerrColeo_freq = sum(TerrColeo_num>0)) %>% mutate(Hymen_freq = sum(Hymen_num>0)) %>%
@@ -956,7 +946,7 @@ diet.mat.pr <- diet.mat.pr %>% rowwise() %>% mutate(Orthop_freq = sum(Orthop_num
 
 
 
-# Check freq columns to make sure correct
+#Check freq columns to make sure correct
 
 diet.mat.freqcheck <- diet.mat.pr[,-c(3:36)]
 
@@ -964,8 +954,8 @@ View(diet.mat.freqcheck)
 
 
 
-# Good to go
-# Check to make sure FreqTot same as sum of all freq columns
+#Good to go
+#Check to make sure FreqTot same as sum of all freq columns
 
 
 diet.mat.check <- diet.mat.pr %>% rowwise() %>% mutate(TotFreqCheck = sum(Orthop_freq, Dermap_freq, TerrColeo_freq, Hymen_freq, Lepid_freq, Bivalv_freq,
@@ -977,11 +967,11 @@ diet.mat.check <- diet.mat.check[,-c(3:36,38:50)]
 View(diet.mat.check)
 
 
-# FreqTot and _freq columns agree
+#FreqTot and _freq columns agree
 
 
-# Now that we have three columns summarizing total numeric, mass, and frequency,
-# summarize by pond (across months) and calculate IRI per pond, per taxa
+#Now that we have three columns summarizing total numeric, mass, and frequency,
+#summarize by pond (across months) and calculate IRI per pond, per taxa
 
 
 View(diet.mat.pr)
@@ -1000,8 +990,8 @@ View(all.mat.summ)
 
 
 
-# Calculate percent numeric, mass, and freq per taxa
-# ungroup first to remove group_by() limit and allow rowwise() calculation 
+#Calculate percent numeric, mass, and freq per taxa
+#ungroup first to remove group_by() limit and allow rowwise() calculation 
 
 
 all.mat.summ <- all.mat.summ %>% ungroup()
@@ -1054,7 +1044,7 @@ View(all.mat.summ)
 
 
 
-# Trim table to include only IRI components (numP,massP,freqP)
+#Trim table to include only IRI components (numP,massP,freqP)
 
 
 mat.IRI <- all.mat.summ[,-c(2:33)]
@@ -1099,7 +1089,7 @@ View(mat.IRI.tr.1)
 
 
 
-# Changing DF from Wide to Long ----
+#Changing DF from Wide to Long ----
 
 
 names(mat.IRI.tr.1)
@@ -1111,7 +1101,7 @@ IRI.new <- mat.IRI.tr.1 %>% pivot_longer(cols=c( "Orthop_IRI", "Dermap_IRI", "Te
 View(IRI.new)
 
 
-# Spearman Rank Correlation for Annual Diet ----
+#Spearman Rank Correlation for Annual Diet ----
 
 cor.test(IRI.new[IRI.new$Pond == "GSP",]$IRI, IRI.new[IRI.new$Pond == "PP",]$IRI, method = "spearman")
 cor.test(IRI.new[IRI.new$Pond == "GSP",]$IRI, IRI.new[IRI.new$Pond == "KSS",]$IRI, method = "spearman")
@@ -1119,10 +1109,10 @@ cor.test(IRI.new[IRI.new$Pond == "PP",]$IRI, IRI.new[IRI.new$Pond == "KSS",]$IRI
 
 
 
-# None of the annual diets are dissimilar between populations (all IRI rank distribution's are correlated)
-# However, differences in the size distribution of prey items: 
+#None of the annual diets are dissimilar between populations (all IRI rank distribution's are correlated)
+#However, differences in the size distribution of prey items: 
 
-# GSP Diptera
+#GSP Diptera
 
 3.894/788 # 3.894 total grams of diptera over 788 total individuals = 5 mg average wet mass in GSP
 
@@ -1132,8 +1122,8 @@ cor.test(IRI.new[IRI.new$Pond == "PP",]$IRI, IRI.new[IRI.new$Pond == "KSS",]$IRI
 
 
 
-# Plotting ----
-# Make IRI's percentages
+#Plotting ----
+#Make IRI's percentages
 
 
 IRI.new.n <- IRI.new %>%                                  
@@ -1146,7 +1136,7 @@ View(IRI.new.n)
 IRI.new.n <- IRI.new.n %>% filter(Pond == "GSP" | Pond == "PP" | Pond == "KSS")
   
 
-# Now plot
+#Now plot
 
 
 p <- ggplot(IRI.new.n, aes(x = Taxon, y = IRI_P, fill = Pond))+
@@ -1156,7 +1146,7 @@ p <- ggplot(IRI.new.n, aes(x = Taxon, y = IRI_P, fill = Pond))+
 p + coord_flip()
 
 
-# Try ordering by IRI
+#Try ordering by IRI
 
 p.ord <- ggplot(IRI.new.n, aes(x = reorder(Taxon, IRI_P), y = IRI_P, fill = Pond))+
   geom_bar(stat="identity", color="black", position=position_dodge()) +
@@ -1169,7 +1159,7 @@ p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
   scale_fill_brewer(palette = "Blues")
 
 
-# test different palettes for plot
+#test different palettes for plot
 
 
 p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
@@ -1177,10 +1167,10 @@ p.ord + coord_flip()  + scale_y_continuous(expand = expansion(mult = c(0, 0))) +
 
 
 
-# Relationship between Preparation and Allocation ----
+#Relationship between Preparation and Allocation ----
 
-# If we trim the timeline so only include the preparatory and allocatory windows, linear relationships between HSI and GSI should be reasonable
-# Need to specify windows for each population;
+#If we trim the timeline so only include the preparatory and allocatory windows, linear relationships between HSI and GSI should be reasonable
+#Need to specify windows for each population;
 
 
 
@@ -1234,7 +1224,7 @@ pump.f.hsi
 
 
 
-# Now trim to include only allocation and preparation windows - Prep starts in April, allocation ends in June (so months >3 and <7)
+#Now trim to include only allocation and preparation windows - Prep starts in April, allocation ends in June (so months >3 and <7)
 
 pump.t$Month <- as.numeric(pump.t$Month)
 
@@ -1247,13 +1237,13 @@ plot(log(pump.t.pa[pump.t.pa$Sex == "F" & pump.t.pa$Pond == "PP",]$GSI) ~ pump.t
 
 
 
-# No relationship -- Flat line driven by the delay (asynchrony)
+#No relationship -- Flat line driven by the delay (asynchrony)
 
 
 
 
-# Analysis of Maximum Prep and Alloc ----
-# ANOVA ----
+#Analysis of Maximum Prep and Alloc ----
+#ANOVA ----
 
 
 View(pump.t)
@@ -1266,7 +1256,7 @@ gsp.max <- pump.t %>% filter(Sex == "F" & Sample == "10" & Pond == "GSP")
 View(gsp.max)
 
 
-# n = 13
+#n = 13
 
 
 kss.max <- pump.t %>% filter(Sex == "F" & Sample == "10" & Pond == "KSS")
@@ -1275,7 +1265,7 @@ kss.max <- pump.t %>% filter(Sex == "F" & Sample == "10" & Pond == "KSS")
 View(kss.max)
 
 
-# n = 8
+#n = 8
 
 
 pp.max <- pump.t %>% filter(Sex == "F" & Sample == "11" & Pond == "PP")
@@ -1284,10 +1274,10 @@ pp.max <- pump.t %>% filter(Sex == "F" & Sample == "11" & Pond == "PP")
 View(pp.max)
 
 
-# n = 13
+#n = 13
 
 
-# Now rbind the subsetted dataframes
+#Now rbind the subsetted dataframes
 
 all.max <- rbind(gsp.max, kss.max, pp.max)
 
@@ -1307,12 +1297,12 @@ shapiro.test(log(all.max.t$GSI))
 shapiro.test(all.max.t$GSI)
 
 
-# W = 0.97, p = 0.508
+#W = 0.97, p = 0.508
 
 
 all.max.t$Pond <- as.factor(all.max.t$Pond)
 
-# Now we have a normal and relevant GSI comparison; run aov
+#Now we have a normal and relevant GSI comparison; run aov
 
 
 aov.max.g.l <- aov(log(GSI) ~ Pond, data = all.max.t)
@@ -1327,11 +1317,11 @@ TukeyHSD(aov.max.g)
 TukeyHSD(aov.max.g.l)
 
 
-# KSS > GSP (p = 0.0094; log-p = 0.021), KSS >> PP (p = 0.0002; log-p = 0.001)
+#KSS > GSP (p = 0.0094; log-p = 0.021), KSS >> PP (p = 0.0002; log-p = 0.001)
 
 
 
-# Find magnitudes of difference
+#Find magnitudes of difference
 
 
 gsi.s <- all.max.t %>% group_by(Pond) %>% summarize(gonad = mean(GSI))
@@ -1342,10 +1332,10 @@ View(gsi.s)
 
 
 
-# GSP = 12.21 +- 6.33; KSS = 19.64 +- 6.01; PP = 8.70 +- 2.69
+#GSP = 12.21 +- 6.33; KSS = 19.64 +- 6.01; PP = 8.70 +- 2.69
 
 
-# Now HSI, combine two highest periods of HSI
+#Now HSI, combine two highest periods of HSI
 
 pump.t$Sample <- as.numeric(pump.t$Sample)
 
@@ -1355,7 +1345,7 @@ gsp.max.h <- pump.t %>% filter(Sex == "F" & Sample > 7 & Sample < 10 & Pond == "
 View(gsp.max.h)
 
 
-# n = 17
+#n = 17
 
 
 kss.max.h <- pump.t %>% filter(Sex == "F" & Sample > 8 & Sample < 11 & Pond == "KSS")
@@ -1364,7 +1354,7 @@ kss.max.h <- pump.t %>% filter(Sex == "F" & Sample > 8 & Sample < 11 & Pond == "
 View(kss.max.h)
 
 
-# n = 12
+#n = 12
 
 
 pp.max.h <- pump.t %>% filter(Sex == "F" & Sample > 7 & Sample < 10 & Pond == "PP")
@@ -1373,10 +1363,10 @@ pp.max.h <- pump.t %>% filter(Sex == "F" & Sample > 7 & Sample < 10 & Pond == "P
 View(pp.max.h)
 
 
-# n = 16
+#n = 16
 
 
-# Now combine as above
+#Now combine as above
 
 
 all.max.h <- rbind(gsp.max.h, kss.max.h, pp.max.h)
@@ -1390,14 +1380,14 @@ shapiro.test(all.max.h$HSI)
 
 
 
-# W = 0.981, p = 0.666
+#W = 0.981, p = 0.666
 
 
 all.max.h$Pond <- as.factor(all.max.h$Pond)
 
 
 
-# Now we run aov
+#Now we run aov
 
 
 aov.max.h <- aov(HSI ~ Pond, data = all.max.h)
@@ -1409,9 +1399,9 @@ summary(aov.max.h)
 TukeyHSD(aov.max.h)
 
 
-# GSP > PP (p = 0.0269), all else equal
+#GSP > PP (p = 0.0269), all else equal
 
-# Find magnitudes of difference
+#Find magnitudes of difference
 
 
 hsi.s <- all.max.h %>% group_by(Pond) %>% summarize(liver = mean(HSI))
@@ -1421,11 +1411,11 @@ hsi.s$sd <- all.max.h %>% group_by(Pond) %>% summarize(sd = sd(HSI))
 View(hsi.s)
 
 
-# GSP = 3.74 +- 0.64; KSS = 3.48 +- 0.75; PP = 3.04 +- 0.84
+#GSP = 3.74 +- 0.64; KSS = 3.48 +- 0.75; PP = 3.04 +- 0.84
 
 
 
-# ANCOVA
+#ANCOVA
 
 
 
@@ -1458,7 +1448,7 @@ all.max.h$RWT <- as.integer(all.max.h$RWT)
 all.max.h$Liver <- as.integer(all.max.h$Liver)
 
 
-# Still not working
+#Still not working
 
 
 emm.s <- emmeans(aoc.h, "Pond")
@@ -1466,14 +1456,14 @@ emm.s <- emmeans(aoc.h, "Pond")
 pairs(emm.s)
 
 
-# Same result as with HSI aov <- GSP > PP (df = 39, p = 0.013)
+#Same result as with HSI aov <- GSP > PP (df = 39, p = 0.013)
 
 
 
-# Let's Try SEM ----
+#Let's Try SEM ----
 
 
-# Filter for only females and for prespawning
+#Filter for only females and for prespawning
 View(gut.join.t7)
 
 gut.join.t7.f <- gut.join.t7 %>% filter(Sex == "F")
@@ -1511,14 +1501,14 @@ pump_sem <- psem(
 summary(pump_sem, .progressBar = FALSE)
 
 
-# Try trimming out the post-spawning windows
+#Try trimming out the post-spawning windows
 
 plot(sem.df$HSI ~ sem.df$Temp)
 plot(sem.df$GFI ~ sem.df$Temp)
 plot(sem.df$MesInd ~ sem.df$Temp)
 
 
-# 15oC seems to be relevant cutoff point between preparation and spawning -> all samples before 10 are below 15 oC
+#15oC seems to be relevant cutoff point between preparation and spawning -> all samples before 10 are below 15 oC
 
 
 gut.join.t7.f$Sample <- as.numeric(gut.join.t7.f$Sample)
@@ -1546,9 +1536,9 @@ plot(sem.df.n.t$HSI ~ log(sem.df.n.t$GFI))
 plot(sem.df.n.t$HSI ~ log(sem.df.n.t$MesInd))
 
 
-# Converges and give interesting output
+#Converges and give interesting output
 
-# What if we remove the temp ~ HSI?
+#What if we remove the temp ~ HSI?
 
 pump_sem.r <- psem(
   lme(log(GFI) ~ Temp, random = ~1|Pond.x, data = sem.df.n.t, method = "ML"),
@@ -1561,8 +1551,8 @@ pump_sem.r <- psem(
 summary(pump_sem.r, .progressBar = FALSE)
 
 
-# Need the temp HSI, otherwise model breaks down
-# Let's try a different configuration
+#Need the temp HSI, otherwise model breaks down
+#Let's try a different configuration
 
 
 
@@ -1577,4 +1567,4 @@ pump_sem3 <- psem(
 summary(pump_sem3, .progressBar = FALSE)
 
 
-# Functionally does not converge
+#Functionally does not converge
