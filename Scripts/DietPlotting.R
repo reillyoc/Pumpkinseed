@@ -15,7 +15,7 @@ diet <- read.csv("../Pumpkinseeds/Data/DietMatrix.csv", header = T)
 
 ##### Code #####
 #Filter out sample periods greater than 2 and pumpkinseed with a size greater or equal to 60 mm
-diet.t <- diet %>% filter(Sample > 2) %>% filter(TLEN >= 60)
+diet.t <- diet %>% filter(Sample > 2) %>% filter(TLEN >= 60) %>% filter(Fullness == "MT")
 
 #Filter out Macrophytes as they are already included in other
 diet.t <- diet.t %>% select(-c(Vegetation_num, Vegetation_mass))
@@ -23,6 +23,12 @@ diet.t <- diet.t %>% select(-c(Vegetation_num, Vegetation_mass))
 #Ensure sample and pond are set as factors
 diet.t$Sample <- as.factor(diet.t$Sample)
 diet.t$Pond <- as.factor(diet.t$Pond)
+
+#Calculate sample sizes!
+sample_size <- diet.t %>% group_by(Pond, Sample, Sex) %>%
+  summarize(count = n())
+
+write.csv(sample_size, "sample_size.csv")
 
 #Calculate total wet biomass for each diet item among individuals
 diet.df <- with(diet.t, aggregate(Stickle_mass, list(Pond=Pond, Sample=Sample), sum))
