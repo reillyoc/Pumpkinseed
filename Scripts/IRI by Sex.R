@@ -350,17 +350,24 @@ IRI.pr.percent.fpr <- IRI.pr.percent %>% filter(Sex == "F")
 IRI.po.percent.mpo <- IRI.po.percent %>% filter(Sex == "M")
 IRI.po.percent.fpo <- IRI.po.percent %>% filter(Sex == "F")
 
-#Set Color Palette
+#Set Color Palette & Organize factors appropriately
 myPal <- c("#9E0142", "#FCAA5F","#FDC877", "#FEE391", "#CAE99D","#A6DBA4", "#7ECBA4", "#59B4AA","#3B92B8", "#4470B1", "#5E4FA2")
 
 IRI.pr.percent.mpr$Taxon <- factor(IRI.pr.percent.mpr$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
 
+IRI.pr.percent.mpr$Pond <- factor(IRI.pr.percent.mpr$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
+
 IRI.pr.percent.fpr$Taxon <- factor(IRI.pr.percent.fpr$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
 
-IRI.po.percent.mpo$Taxon <- factor(IRI.pr.percent.mpo$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
+IRI.pr.percent.fpr$Pond <- factor(IRI.pr.percent.fpr$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
 
-IRI.po.percent.fpo$Taxon <- factor(IRI.pr.percent.fpo$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
+IRI.po.percent.mpo$Taxon <- factor(IRI.po.percent.mpo$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
 
+IRI.po.percent.mpo$Pond <- factor(IRI.po.percent.mpo$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
+
+IRI.po.percent.fpo$Taxon <- factor(IRI.po.percent.fpo$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
+
+IRI.po.percent.fpo$Pond <- factor(IRI.po.percent.fpo$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
 
 gg_pre_M_IRI <- ggplot(IRI.pr.percent.mpr, aes(x = Pond, y = IRI_P, fill = Taxon)) + 
   geom_bar(stat="identity") +

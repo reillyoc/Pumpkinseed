@@ -314,6 +314,11 @@ IRI.pr.percent$Taxon <- factor(IRI.po.percent$Taxon, levels = c("Fish_IRI", "Biv
 
 IRI.po.percent$Taxon <- factor(IRI.po.percent$Taxon, levels = c("Fish_IRI", "Bivalv_IRI", "Gastro_IRI", "Zoop_IRI", "Clitella_IRI", "Ephem_IRI", "Trichop_IRI", "Diptera_IRI", "Odonata_IRI", "Hemiptera_IRI", "Other_IRI"))
 
+IRI.pr.percent$Pond <- factor(IRI.pr.percent$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
+
+IRI.po.percent$Pond <- factor(IRI.po.percent$Pond, levels = c("GSP", "PP", "KSS", "KSB"))
+
+
 gg_pre_IRI <- ggplot(IRI.pr.percent, aes(x = Pond, y = IRI_P, fill = Taxon)) + 
   geom_bar(stat="identity") + 
   scale_fill_manual(values = myPal) + 
