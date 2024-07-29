@@ -1,4 +1,4 @@
-# Ephemeral Piscivory in a Rapidly Expanding Warm-Water Fish
+# Ephemeral Piscivory in a Mesopredator Sunfish: Implications for Pond Food Webs
 
 Seasonal diet analysis of Pumpkinseed stomach contents sampled intensively across 4 ponds every 2 weeks.
 
